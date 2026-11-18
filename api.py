@@ -17,12 +17,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from main import estimar_preco
+from employee_auth import login, require_employee
 
 
 app = FastAPI(
     title="Guincho Save Lives",
     description="API Python integrada ao backend Java.",
-    version="1.1.0",
+    version="1.2.0",
 )
 
 JAVA_API_URL = os.getenv(
@@ -54,6 +55,16 @@ app.add_middleware(
         "Authorization",
     ],
 )
+
+
+@app.middleware("http")
+async def private_employee_responses(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/funcionarios") or request.url.path == "/solicitacoes":
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Vary"] = "Authorization, Origin"
+    return response
 
 
 # --------------------------------------------------
@@ -110,7 +121,7 @@ def estimativa(
 # COMUNICAÇÃO COM O JAVA
 # --------------------------------------------------
 
-def chamar_java(request, rota, dados=None):
+def chamar_java(request, rota, dados=None, *, forward_authorization=True):
     if not JAVA_API_URL:
         raise HTTPException(
             status_code=503,
@@ -129,7 +140,7 @@ def chamar_java(request, rota, dados=None):
 
     autorizacao = request.headers.get("authorization")
 
-    if autorizacao:
+    if autorizacao and forward_authorization:
         headers["Authorization"] = autorizacao
 
     argumentos = {
@@ -298,9 +309,11 @@ def cadastrar_guincheiro(
 
 @app.get("/solicitacoes", tags=["Solicitações"])
 def listar_solicitacoes(request: Request):
+    require_employee(request)
     return chamar_java(
         request,
         "/solicitacoes",
+        forward_authorization=False,
     )
 
 
@@ -314,3 +327,22 @@ def criar_solicitacao(
         "/solicitacoes",
         dados,
     )
+
+
+# O Python autentica o funcionário; o Java continua responsável pelos pedidos.
+@app.post("/funcionarios/sessao", tags=["Funcionários"])
+def iniciar_sessao(request: Request, dados: dict = Body(...)):
+    return login(dados.get("pin"), request)
+
+
+@app.get("/funcionarios/solicitacoes", tags=["Funcionários"])
+def solicitacoes_funcionario(request: Request):
+    require_employee(request)
+    return chamar_java(request, "/solicitacoes", forward_authorization=False)
+
+
+@app.delete("/funcionarios/sessao", status_code=204, tags=["Funcionários"])
+def encerrar_sessao(request: Request):
+    require_employee(request)
+    # Tokens assinados expiram em dez minutos; o navegador descarta a sessão ao sair.
+    return Response(status_code=204)

@@ -10,6 +10,7 @@ Variáveis de ambiente:
 
 - `JAVA_API_URL`: URL HTTPS do backend Java, sem barra final. Necessária para as rotas de clientes, guincheiros e solicitações; a estimativa não depende do Java.
 - `CORS_ORIGINS`: origens permitidas, separadas por vírgula. Para o frontend atual, incluir `https://gincho-save-lives.vercel.app`.
+- `EMPLOYEE_PIN_HASH` e `EMPLOYEE_SESSION_SECRET`: Secrets somente no servidor para o acesso de funcionários. Gere com `python configure_employee.py`, configure no ambiente de produção e publique novamente. Consulte [o contrato e os limites das sessões](EMPLOYEE_ACCESS.md).
 
 Após publicar, verificar `GET /`, `GET /openapi.json` e `GET /estimativa?preco_base=180&km=10&tipo=carro&noturno=false`. O exemplo deve retornar `{"valor_estimado":225.0,"moeda":"BRL"}`.
 
