@@ -2,7 +2,7 @@
 
 A aplicação web é a instância `app` do FastAPI em `api.py`. O arquivo `main.py` contém o programa de terminal e a função de cálculo importada pela API.
 
-O `pyproject.toml` define explicitamente `api:app` como entrypoint da Vercel. As dependências continuam em `requirements.txt`.
+O `pyproject.toml` define explicitamente `api:app` como entrypoint da Vercel, Python 3.12 e as dependências da API. A Vercel prioriza esse arquivo quando ele existe; por isso as dependências também precisam estar declaradas nele. O `requirements.txt` mantém as mesmas versões para instalação via pip e outros provedores. Atualizar os dois arquivos juntos ao alterar bibliotecas.
 
 Na Vercel, selecionar o preset **FastAPI** e a raiz do repositório. Não usar `python main.py` como comando de build ou de inicialização.
 
