@@ -1,4 +1,4 @@
-"""Testes das regras de negócio, sem bibliotecas externas."""
+"""Testes das regras de negÃ³cio, sem bibliotecas externas."""
 import tempfile
 from pathlib import Path
 import main
@@ -28,7 +28,7 @@ def executar_testes():
             assert main.carregar() == dados
         finally:
             main.ARQUIVO = original
-    # As transições abaixo não devem criar arquivos de dados na pasta do projeto.
+    # As transiÃ§Ãµes abaixo nÃ£o devem criar arquivos de dados na pasta do projeto.
     original_salvar = main.salvar
     main.salvar = lambda dados: True
     pedido = {'id': 1, 'status': 'pendente', 'proposta': None}
@@ -38,7 +38,7 @@ def executar_testes():
     assert main.alterar_status(dados, pedido, 'em_andamento')
     assert main.alterar_status(dados, pedido, 'concluido')
     main.salvar = original_salvar
-    print('Todos os cenários de teste passaram.')
+    print('Todos os cenÃ¡rios de teste passaram.')
 
 
 if __name__ == '__main__':
